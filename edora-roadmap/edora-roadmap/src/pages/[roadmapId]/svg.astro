@@ -1,0 +1,72 @@
+---
+import { EditorRoadmap } from '../../components/EditorRoadmap/EditorRoadmap';
+import SkeletonLayout from '../../layouts/SkeletonLayout.astro';
+import { getOpenGraphImageUrl } from '../../lib/open-graph';
+import { officialRoadmapDetails } from '../../queries/official-roadmap';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export const prerender = false;
+
+interface Params extends Record<string, string | undefined> {
+  roadmapId: string;
+}
+
+const { roadmapId } = Astro.params as Params;
+const roadmapData = await officialRoadmapDetails(roadmapId);
+if (!roadmapData) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not found';
+  return Astro.rewrite('/404');
+}
+
+// Load local JSON for nodes/edges as a reliable source
+let localNodes = roadmapData.nodes || [];
+let localEdges = roadmapData.edges || [];
+
+if (!localNodes.length || !localEdges.length) {
+  try {
+    const jsonPath = path.resolve(`src/data/roadmaps/${roadmapId}/${roadmapId}.json`);
+    if (fs.existsSync(jsonPath)) {
+      const jsonContent = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+      localNodes = jsonContent.nodes || [];
+      localEdges = jsonContent.edges || [];
+    }
+  } catch (err) {
+    console.error(`[EditorRoadmap SVG] Error reading local JSON for "${roadmapId}":`, err);
+  }
+}
+
+const ogImageUrl =
+  roadmapData?.openGraph?.image ||
+  getOpenGraphImageUrl({
+    group: 'roadmap',
+    resourceId: roadmapId,
+  });
+
+const safeDimensions = roadmapData.dimensions || { width: 968, height: 2000 };
+---
+
+<SkeletonLayout
+  permalink={`/${roadmapId}`}
+  title={roadmapData?.seo?.title || roadmapData.title.page}
+  briefTitle={roadmapData.title.card}
+  ogImageUrl={ogImageUrl}
+  description={roadmapData.seo.description}
+  keywords={roadmapData.seo.keywords}
+  resourceId={roadmapId}
+  resourceType='roadmap'
+  noIndex={true}
+>
+  <div class='relative container max-w-[1000px]!'>
+    <EditorRoadmap
+      resourceId={roadmapId}
+      resourceType='roadmap'
+      dimensions={safeDimensions}
+      nodes={localNodes}
+      edges={localEdges}
+      client:load
+      hasChat={false}
+    />
+  </div>
+</SkeletonLayout>

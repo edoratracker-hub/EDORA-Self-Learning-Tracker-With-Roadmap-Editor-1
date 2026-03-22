@@ -1,0 +1,138 @@
+svg text tspan {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+}
+
+svg > g[data-type='topic'],
+svg > g[data-type='subtopic'],
+svg g[data-type='link-item'],
+svg > g[data-type='button'],
+svg > g[data-type='resourceButton'],
+svg > g[data-type='todo-checkbox'],
+svg > g[data-type='todo'],
+svg > g[data-type='checklist'] > g[data-type='checklist-item'] > rect {
+  cursor: pointer;
+}
+
+svg > g[data-type='topic']:hover > rect {
+  fill: var(--hover-color);
+}
+
+svg > g[data-type='subtopic']:hover > rect {
+  fill: var(--hover-color);
+}
+svg g[data-type='button']:hover,
+svg g[data-type='link-item']:hover,
+svg g[data-type='resourceButton']:hover,
+svg g[data-type='todo-checkbox']:hover {
+  opacity: 0.8;
+}
+
+svg g[data-type='checklist'] > g[data-type='checklist-item'] > rect:hover {
+  fill: #cbcbcb !important;
+}
+
+svg .done rect {
+  fill: #cbcbcb !important;
+}
+
+svg .done text,
+svg .skipped text {
+  text-decoration: line-through;
+}
+
+svg > g[data-type='topic'].learning > rect + text,
+svg > g[data-type='topic'].done > rect + text {
+  fill: black;
+}
+
+svg .done text[fill='#ffffff'] {
+  fill: black;
+}
+
+svg > g[data-type='subtipic'].done > rect + text,
+svg > g[data-type='subtipic'].learning > rect + text {
+  fill: #cbcbcb;
+}
+
+svg .learning rect {
+  fill: #dad1fd !important;
+}
+svg .learning text {
+  text-decoration: underline;
+}
+
+svg .skipped rect {
+  fill: #496b69 !important;
+}
+
+/* ===== Dark-theme overrides for React Flow ===== */
+
+/* Make the React Flow canvas transparent so the dark gradient shines through */
+.custom-reactflow-dark .react-flow__pane {
+  background: transparent !important;
+}
+.custom-reactflow-dark .react-flow {
+  background: transparent !important;
+}
+.custom-reactflow-dark .react-flow__background {
+  background: transparent !important;
+}
+
+/* React Flow node wrappers — ensure they don't inject light bg */
+.custom-reactflow-dark .react-flow__node {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Roadmap nodes — clickable types get pointer cursor */
+.roadmap-node-topic,
+.roadmap-node-subtopic,
+.roadmap-node-button,
+.roadmap-node-link-item,
+.roadmap-node-resourceButton,
+.roadmap-node-todo,
+.roadmap-node-todo-checkbox,
+.roadmap-node-checklist-item {
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.roadmap-node-topic:hover,
+.roadmap-node-subtopic:hover {
+  opacity: 0.85;
+  transform: scale(1.01);
+}
+.roadmap-node-button:hover,
+.roadmap-node-link-item:hover,
+.roadmap-node-resourceButton:hover {
+  opacity: 0.8;
+}
+
+/* Dark-theme Controls styling */
+.custom-reactflow-dark .react-flow__controls {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.custom-reactflow-dark .react-flow__controls-button {
+  background: transparent;
+  border-bottom-color: rgba(148, 163, 184, 0.2);
+  fill: #cbd5e1; /* slate-300 */
+  color: #cbd5e1;
+}
+.custom-reactflow-dark .react-flow__controls-button:hover {
+  background: rgba(148, 163, 184, 0.15);
+}
+.custom-reactflow-dark .react-flow__controls-button svg {
+  fill: #cbd5e1;
+}
+
+/* Minimap dark theme (if used) */
+.custom-reactflow-dark .react-flow__minimap {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+}

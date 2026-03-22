@@ -1,0 +1,103 @@
+---
+import { ArrowLeftIcon, FolderKanbanIcon, MapIcon } from 'lucide-react';
+import { DownloadRoadmapButton } from './DownloadRoadmapButton';
+import ProgressHelpPopup from './ProgressHelpPopup.astro';
+import { ShareRoadmapButton } from './ShareRoadmapButton';
+import { TabLink } from './TabLink';
+
+export interface Props {
+  title: string;
+  description: string;
+  partner?: {
+    description: string;
+    link: string;
+    linkText: string;
+  };
+  roadmapId: string;
+  hasSearch?: boolean;
+  projectCount?: number;
+  coursesCount?: number;
+  isForkable?: boolean;
+  isNew?: boolean;
+  activeTab?: 'roadmap' | 'projects' | 'courses';
+}
+
+const {
+  title,
+  description,
+  roadmapId,
+  partner,
+  projectCount = 0,
+  activeTab = 'roadmap',
+  coursesCount = 0,
+  isNew = false,
+} = Astro.props;
+---
+
+<ProgressHelpPopup />
+
+<div
+  class='max-w-4xl mx-auto mt-0 flex flex-col gap-2.5 px-0 text-white sm:mt-3 sm:px-4 w-full'
+>
+  <div
+    class='relative px-5 pt-4 pb-0 text-white'
+  >
+    <div class='flex items-start justify-between text-white'>
+      <a
+        class='inline-flex items-center justify-center rounded-md px-2 py-1.5 text-xs font-medium text-white sm:hidden sm:text-sm'
+        aria-label='Back to roadmaps'
+        href={'/'}
+      >
+        <ArrowLeftIcon className='h-4 w-4' />
+      </a>
+
+      <a
+        href='/'
+        class='hidden rounded-md text-sm font-medium text-white transition-all focus:outline-0 sm:block'
+        aria-label='Back to All Roadmaps'
+      >
+        &larr;&nbsp;<span>&nbsp;All Roadmaps</span>
+      </a>
+      <div
+        class='relative top-0 right-0 flex items-center gap-1 text-white sm:-top-0.5 sm:-right-2'
+      >
+        <DownloadRoadmapButton roadmapId={roadmapId} client:idle />
+        <ShareRoadmapButton
+          description={description}
+          pageUrl={`https://edora.com/${roadmapId}`}
+          client:idle
+        />
+      </div>
+    </div>
+    <div class:list={['mt-5 mb-5 sm:mt-12 sm:mb-12']}>
+      <h1 class='mb-0.5 text-2xl font-bold text-white sm:mb-3.5 sm:text-5xl'>
+        {title}
+      </h1>
+      <p class='text-sm text-balance text-white sm:text-lg'>
+        {description}
+      </p>
+    </div>
+
+    {
+      (
+        <div class='flex justify-between gap-2 text-white sm:gap-0'>
+          <div class='relative top-px flex gap-1 text-white sm:gap-2'>
+            <TabLink
+              url={`/${roadmapId}`}
+              icon={MapIcon}
+              isActive={activeTab === 'roadmap'}
+              text='Roadmap'
+            />
+
+            <TabLink
+              url={`/${roadmapId}/projects`}
+              icon={FolderKanbanIcon}
+              text='Projects'
+              isActive={activeTab === 'projects'}
+            />
+          </div>
+        </div>
+      )
+    }
+  </div>
+</div>

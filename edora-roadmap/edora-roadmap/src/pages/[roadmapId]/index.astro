@@ -1,0 +1,151 @@
+---
+import { EditorRoadmap } from '../../components/EditorRoadmap/EditorRoadmap';
+import { TopicDetail } from '../../components/TopicDetail/TopicDetail';
+import RoadmapHeader from '../../components/RoadmapHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { isNewRoadmap } from '../../queries/official-roadmap';
+import {
+  generateArticleSchema,
+  generateFAQSchema, 
+} from '../../lib/jsonld-schema';
+import { getOpenGraphImageUrl } from '../../lib/open-graph';
+import { officialRoadmapDetails } from '../../queries/official-roadmap';
+import { DateTime } from 'luxon';
+import { listOfficialProjects } from '../../queries/official-project';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export const prerender = false;
+
+interface Params extends Record<string, string | undefined> {
+  roadmapId: string;
+}
+
+const { roadmapId } = Astro.params as Params;
+const roadmapData = await officialRoadmapDetails(roadmapId);
+if (!roadmapData) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not found';
+  return Astro.rewrite('/404');
+}
+
+// Load local JSON for nodes/edges as a reliable source
+let localNodes = roadmapData.nodes || [];
+let localEdges = roadmapData.edges || [];
+
+if (!localNodes.length || !localEdges.length) {
+  try {
+    const jsonPath = path.resolve(`src/data/roadmaps/${roadmapId}/${roadmapId}.json`);
+    if (fs.existsSync(jsonPath)) {
+      const jsonContent = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+      localNodes = jsonContent.nodes || [];
+      localEdges = jsonContent.edges || [];
+      console.log(`[EditorRoadmap] Loaded local JSON for "${roadmapId}": ${localNodes.length} nodes, ${localEdges.length} edges`);
+    } else {
+      console.warn(`[EditorRoadmap] No local JSON found at ${jsonPath}`);
+    }
+  } catch (err) {
+    console.error(`[EditorRoadmap] Error reading local JSON for "${roadmapId}":`, err);
+  }
+}
+
+let jsonLdSchema = [];
+
+const datePublished = DateTime.fromJSDate(
+  new Date(roadmapData?.createdAt),
+).toFormat('yyyy-MM-dd');
+const dateModified = DateTime.fromJSDate(
+  new Date(roadmapData?.updatedAt),
+).toFormat('yyyy-MM-dd');
+
+const baseUrl = import.meta.env.DEV
+  ? `http://localhost:8080`
+  : `https://roadmap.sh`;
+
+jsonLdSchema.push(
+  generateArticleSchema({
+    url: `https://roadmap.sh/${roadmapId}`,
+    headline: roadmapData?.seo?.title || roadmapData?.title?.page,
+    description: roadmapData?.description,
+    datePublished,
+    dateModified,
+    imageUrl: `${baseUrl}/roadmaps/${roadmapId}.png`,
+  }),
+);
+
+const ogImageUrl =
+  roadmapData?.openGraph?.image ||
+  getOpenGraphImageUrl({
+    group: 'roadmap',
+    resourceId: roadmapId,
+  });
+
+const question = roadmapData?.questions?.find(
+  (question) => question.type === 'main',
+);
+const faqs =
+  roadmapData?.questions?.filter((question) => question.type === 'faq') || [];
+if (faqs.length) {
+  jsonLdSchema.push(generateFAQSchema(faqs));
+}
+
+const projects = await listOfficialProjects({ roadmapId });
+const courses = roadmapData.courses || [];
+
+const isNew = isNewRoadmap(roadmapData.createdAt);
+
+const safeDimensions = roadmapData.dimensions || { width: 968, height: 2000 };
+---
+
+<BaseLayout
+  permalink={`/${roadmapId}`}
+  title={roadmapData?.seo?.title || roadmapData?.title.page}
+  briefTitle={roadmapData.title.card}
+  ogImageUrl={ogImageUrl}
+  description={roadmapData.seo.description}
+  keywords={roadmapData.seo.keywords}
+  noIndex={false}
+  jsonLd={jsonLdSchema}
+  resourceId={roadmapId}
+  resourceType='roadmap'
+>
+  <div class='bg-linear-to-b from-slate-900 to-black'>
+    <RoadmapHeader
+      title={roadmapData.title.page}
+      description={roadmapData.description}
+      partner={roadmapData.partner}
+      roadmapId={roadmapId}
+      isForkable={true}
+      isNew={isNew}
+      projectCount={projects.length}
+      coursesCount={courses.length}
+    />
+
+    <div class='relative container max-w-[1000px]!'>
+      <TopicDetail
+        resourceId={roadmapId}
+        resourceType='roadmap'
+        renderer='editor'
+        canSubmitContribution={true}
+        client:idle
+      />
+
+      <EditorRoadmap
+        resourceId={roadmapId}
+        resourceType='roadmap'
+        dimensions={safeDimensions}
+        nodes={localNodes}
+        edges={localEdges}
+        client:load
+      />
+    </div>
+
+    {
+      roadmapId === 'docker' && (
+        <p class='mb-8 px-5 text-center text-xs text-gray-400 sm:mb-12'>
+          Roadmap owner Insight Partners is an investor in Docker.
+        </p>
+      )
+    }
+  </div>
+</BaseLayout>
