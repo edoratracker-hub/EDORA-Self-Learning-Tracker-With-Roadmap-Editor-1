@@ -403,15 +403,15 @@ const nodes = [
   },
 ];
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-if (!OPENAI_API_KEY) {
-  console.error('OPENAI_API_KEY is not set');
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY is not set');
   process.exit(1);
 }
 
 const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
+  apiKey: GEMINI_API_KEY,
 });
 
 const prompt = `

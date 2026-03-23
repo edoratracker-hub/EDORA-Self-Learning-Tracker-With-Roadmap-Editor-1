@@ -9,8 +9,8 @@ export const runtime = "edge";
 
 export async function POST(req: Request): Promise<Response> {
   // Check if the OPENAI_API_KEY is set, if not return 400
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "") {
-    return new Response("Missing OPENAI_API_KEY - make sure to add it to your .env file.", {
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "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") {
+    return new Response("Missing GEMINI_API_KEY - make sure to add it to your .env file.", {
       status: 400,
     });
   }
