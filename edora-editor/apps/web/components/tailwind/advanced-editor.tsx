@@ -34,10 +34,11 @@ const extensions = [...defaultExtensions, slashCommand];
 
 interface EditorProps {
   classroomId?: string | null;
+  fileId?: string | null;
   dynamicInitialContent?: JSONContent | null;
 }
 
-const TailwindAdvancedEditor = ({ classroomId, dynamicInitialContent }: EditorProps) => {
+const TailwindAdvancedEditor = ({ classroomId, fileId, dynamicInitialContent }: EditorProps) => {
   const [initialContent, setInitialContent] = useState<null | JSONContent>(null);
   const [saveStatus, setSaveStatus] = useState("Saved");
   const [charsCount, setCharsCount] = useState<number>();
@@ -59,10 +60,15 @@ const TailwindAdvancedEditor = ({ classroomId, dynamicInitialContent }: EditorPr
   const debouncedUpdates = useDebouncedCallback(async (editor: EditorInstance) => {
     const json = editor.getJSON();
     setCharsCount(editor.storage.characterCount.words());
-    window.localStorage.setItem("html-content", highlightCodeblocks(editor.getHTML()));
-    window.localStorage.setItem("novel-content", JSON.stringify(json));
-    window.localStorage.setItem("markdown", editor.storage.markdown.getMarkdown());
-    
+
+    // Only write to localStorage for the local sandbox (no classroomId / fileId)
+    if (!classroomId && !fileId) {
+      const storageKey = "novel-content-local";
+      window.localStorage.setItem("html-content-local", highlightCodeblocks(editor.getHTML()));
+      window.localStorage.setItem(storageKey, JSON.stringify(json));
+      window.localStorage.setItem("markdown-local", editor.storage.markdown.getMarkdown());
+    }
+
     // --> ADDED: Save to Edora Tracker Database <--
     if (classroomId) {
       setSaveStatus("Saving...");
@@ -77,38 +83,52 @@ const TailwindAdvancedEditor = ({ classroomId, dynamicInitialContent }: EditorPr
         console.error("Failed to save to database", err);
         setSaveStatus("Save Failed");
       }
+    } else if (fileId) {
+      setSaveStatus("Saving...");
+      try {
+        await fetch(`http://localhost:3000/api/workspace/file/external/${fileId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: json }),
+        });
+        setSaveStatus("Saved");
+      } catch (err) {
+        console.error("Failed to save workspace file", err);
+        setSaveStatus("Save Failed");
+      }
     } else {
       setSaveStatus("Saved");
     }
   }, 500);
 
   useEffect(() => {
-    // If we passed content from edora-tracker, prioritize that!
     if (dynamicInitialContent) {
+      // DB content loaded from edora-tracker — use it directly
       setInitialContent(dynamicInitialContent);
+    } else if (classroomId || fileId) {
+      // We're in a classroom/file context but the document has no saved content yet.
+      // Do NOT fall back to localStorage — that would show another document's content.
+      setInitialContent(defaultEditorContent);
     } else {
-      // Fallback defaults for missing/local
-      const content = window.localStorage.getItem("novel-content");
+      // Pure local sandbox — use the scoped local key
+      const content = window.localStorage.getItem("novel-content-local");
       if (content) setInitialContent(JSON.parse(content));
       else setInitialContent(defaultEditorContent);
     }
-  }, [dynamicInitialContent]);
+  }, [dynamicInitialContent, classroomId, fileId]);
 
   if (!initialContent) return null;
 
   return (
     <div className="relative w-full max-w-screen-lg">
       <div className="flex absolute right-5 top-5 z-10 mb-5 gap-2">
-        <div className="rounded-lg bg-accent px-2 py-1 text-sm text-muted-foreground">{saveStatus}</div>
-        <div className={charsCount ? "rounded-lg bg-accent px-2 py-1 text-sm text-muted-foreground" : "hidden"}>
-          {charsCount} Words
-        </div>
+        <div className="bg-accent px-2 py-1 text-sm text-muted-foreground">{saveStatus}</div>
       </div>
       <EditorRoot>
         <EditorContent
           initialContent={initialContent}
           extensions={extensions}
-          className="relative min-h-[500px] w-full max-w-screen-lg border-muted bg-background sm:mb-[calc(20vh)] sm:rounded-lg sm:border sm:shadow-lg"
+          className="relative w-full"
           editorProps={{
             handleDOMEvents: {
               keydown: (_view, event) => handleCommandNavigation(event),

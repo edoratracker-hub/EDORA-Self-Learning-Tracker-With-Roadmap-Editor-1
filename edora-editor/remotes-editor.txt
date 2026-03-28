@@ -1,0 +1,4 @@
+origin	https://github.com/edoratracker-hub/EDORA-Self-Learning-Tracker-With-Roadmap-Editor.git (fetch)
+origin	https://github.com/edoratracker-hub/EDORA-Self-Learning-Tracker-With-Roadmap-Editor.git (push)
+upstream	https://github.com/titoretty/EDORA-Self-Learning-Tracker-With-Roadmap-Editor.git (fetch)
+upstream	https://github.com/titoretty/EDORA-Self-Learning-Tracker-With-Roadmap-Editor.git (push)
