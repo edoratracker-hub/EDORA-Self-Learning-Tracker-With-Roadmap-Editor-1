@@ -1,0 +1,1 @@
+ALTER TABLE "student_profile" ADD COLUMN "experience_level" text;

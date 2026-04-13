@@ -1,0 +1,2 @@
+origin	https://github.com/titoretty/edora-tracker.git (fetch)
+origin	https://github.com/titoretty/edora-tracker.git (push)
