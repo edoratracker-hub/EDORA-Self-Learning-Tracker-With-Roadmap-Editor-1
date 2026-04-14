@@ -90,7 +90,6 @@ export async function sendOTPEmail(email: string, otp: string) {
         text: `Your OTP is ${otp}`,
         html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
-                <h2>Your Login OTP</h2>
                 <p>Use the following code to sign in or sign up to Edora Tracker:</p>
                 <div style="font-size: 24px; font-weight: bold; background: #f4f4f4; padding: 10px; text-align: center; border-radius: 5px; margin: 20px 0;">
                     ${otp}
@@ -114,7 +113,8 @@ export async function sendMentorVerificationEmail(
 ) {
     const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com"
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-    const verifyUrl = `${baseUrl}/api/verify-mentor?token=${verificationToken}&id=${mentorId}`
+    const approveUrl = `${baseUrl}/api/verify-mentor?token=${verificationToken}&id=${mentorId}&action=approve`
+    const rejectUrl = `${baseUrl}/api/verify-mentor?token=${verificationToken}&id=${mentorId}&action=reject`
 
     const mailOptions = {
         from: process.env.EMAIL_FROM || '"Edora Tracker" <noreply@edora.com>',
@@ -169,16 +169,29 @@ export async function sendMentorVerificationEmail(
                     </div>
                     ` : ""}
 
-                    <!-- Action Button -->
+                    <!-- Action Buttons -->
                     <div style="text-align: center; margin: 32px 0 16px;">
-                        <a href="${verifyUrl}"
-                           style="display: inline-block; background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 14px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(5,150,105,0.4);">
-                            ✅ Approve Mentor
-                        </a>
+                        <table style="margin: 0 auto; border-collapse: separate; border-spacing: 16px;">
+                            <tr>
+                                <td>
+                                    <a href="${approveUrl}"
+                                       style="display: inline-block; background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 14px 36px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(5,150,105,0.4);">
+                                        ✅ Approve
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="${rejectUrl}"
+                                       style="display: inline-block; background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 14px 36px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(220,38,38,0.4);">
+                                        ❌ Reject
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
 
                     <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 16px;">
-                        Or copy this link: <a href="${verifyUrl}" style="color: #059669;">${verifyUrl}</a>
+                        Approve: <a href="${approveUrl}" style="color: #059669;">${approveUrl}</a><br/>
+                        Reject: <a href="${rejectUrl}" style="color: #dc2626;">${rejectUrl}</a>
                     </p>
                 </div>
 

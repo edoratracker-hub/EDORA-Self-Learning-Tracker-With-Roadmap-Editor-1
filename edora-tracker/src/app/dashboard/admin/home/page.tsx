@@ -1,4 +1,4 @@
-import { getAllUsers } from "@/app/actions/admin-actions";
+import { getAllUsers, getSystemLogs } from "@/app/actions/admin-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -7,12 +7,37 @@ import {
   UserCheckIcon,
   UserPlusIcon,
   UsersIcon,
+  LogInIcon,
 } from "lucide-react";
+import { formatDistanceToNow, format, subMonths } from "date-fns";
+import { ChartLineMultiple } from "./_components/chart-line-multiple";
 
 const AdminDashboardHomePage = async () => {
-  const result = await getAllUsers();
+  const [usersResult, logsResult] = await Promise.all([
+    getAllUsers(),
+    getSystemLogs()
+  ]);
 
-  const users = result.success ? result.data || [] : [];
+  const users = usersResult.success ? usersResult.data || [] : [];
+  const logs = logsResult.success ? logsResult.data || [] : [];
+
+  const chartData = Array.from({ length: 6 }).map((_, i) => {
+    const d = subMonths(new Date(), 5 - i);
+    const monthStr = format(d, "MMMM");
+    const signupsCount = users.filter(
+      (u) =>
+        u.createdAt &&
+        new Date(u.createdAt).getMonth() === d.getMonth() &&
+        new Date(u.createdAt).getFullYear() === d.getFullYear()
+    ).length;
+    const signinsCount = logs.filter(
+      (l) =>
+        l.createdAt &&
+        new Date(l.createdAt).getMonth() === d.getMonth() &&
+        new Date(l.createdAt).getFullYear() === d.getFullYear()
+    ).length;
+    return { month: monthStr, signups: signupsCount, signins: signinsCount };
+  });
 
   const stats = [
     {
@@ -87,48 +112,22 @@ const AdminDashboardHomePage = async () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ActivityIcon className="h-5 w-5 text-primary" />
-              Platform Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[200px] flex items-center justify-center border-2 border-dashed rounded-xl bg-muted/20">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  Activity visualization coming soon
-                </p>
-                <div className="mt-4 flex gap-2 justify-center">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      className="w-8 bg-primary/20 rounded-t-md"
-                      style={{ height: `${Math.random() * 100 + 20}px` }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ChartLineMultiple chartData={chartData} />
 
         <Card className="">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserPlusIcon className="h-5 w-5 text-primary" />
-              Recent Signups
+              <LogInIcon className="h-5 w-5 text-primary" />
+              Recent Sign-ins
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {users
-                .slice(-4)
-                .reverse()
-                .map((user) => (
+              {logs.slice(0, 4).map((log) => {
+                const user = log.user;
+                return (
                   <div
-                    key={user.id}
+                    key={log.id}
                     className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-bold text-primary">
@@ -139,17 +138,23 @@ const AdminDashboardHomePage = async () => {
                         {user.name || "Anonymous"}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {user.email}
+                        Signed in{" "}
+                        {log.createdAt
+                          ? formatDistanceToNow(new Date(log.createdAt), {
+                            addSuffix: true,
+                          })
+                          : "unknown time ago"}
                       </p>
                     </div>
                     <div className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-1 rounded-full uppercase">
                       {user.role}
                     </div>
                   </div>
-                ))}
-              {users.length === 0 && (
+                );
+              })}
+              {logs.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground py-8">
-                  No users found
+                  No sign-ins found
                 </p>
               )}
             </div>

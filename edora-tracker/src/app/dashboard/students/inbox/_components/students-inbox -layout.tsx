@@ -16,6 +16,12 @@ import {
   CheckCircle2,
   XCircle,
   PartyPopperIcon,
+  AlertTriangleIcon,
+  TrophyIcon,
+  MapIcon,
+  FileEditIcon,
+  AwardIcon,
+  StarIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,6 +39,7 @@ import {
   markAllNotificationsRead,
   respondToInvite,
 } from "@/app/actions/collaboration-actions";
+import { AppNotification } from "./types";
 
 /* ------------------------------------------------------------------ */
 /*  Empty-state SVG illustration (mountains + ninja character scene)   */
@@ -190,6 +197,48 @@ const NOTIF_TYPE_CONFIG: Record<string, {
     bgColor: "bg-muted",
     label: "Notification",
     category: "Task",
+  },
+  daily_task_missed: {
+    icon: AlertTriangleIcon,
+    color: "text-red-400",
+    bgColor: "bg-red-500/10",
+    label: "Task Missed",
+    category: "Task",
+  },
+  daily_task_completed: {
+    icon: TrophyIcon,
+    color: "text-yellow-500",
+    bgColor: "bg-yellow-500/10",
+    label: "Task Done",
+    category: "Achievement",
+  },
+  milestone_achieved: {
+    icon: AwardIcon,
+    color: "text-amber-400",
+    bgColor: "bg-amber-500/10",
+    label: "Milestone",
+    category: "Achievement",
+  },
+  roadmap_updated: {
+    icon: MapIcon,
+    color: "text-indigo-400",
+    bgColor: "bg-indigo-500/10",
+    label: "Roadmap Update",
+    category: "Task",
+  },
+  workspace_update: {
+    icon: FileEditIcon,
+    color: "text-teal-400",
+    bgColor: "bg-teal-500/10",
+    label: "Workspace",
+    category: "Collaboration",
+  },
+  achievement_unlocked: {
+    icon: StarIcon,
+    color: "text-pink-400",
+    bgColor: "bg-pink-500/10",
+    label: "Achievement",
+    category: "Achievement",
   },
 };
 
@@ -359,7 +408,7 @@ export const StudentsInboxLayout = () => {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [groupBy, setGroupBy] = useState<GroupByOption>("Date");
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifList, setNotifList] = useState<any[]>([]);
+  const [notifList, setNotifList] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchNotifs = useCallback(async () => {

@@ -483,9 +483,7 @@ export const EditJobVacancyForm = ({
 
                 {/* Section 4: Skills */}
                 <FieldSet>
-                  <FieldLegend className="text-lg font-semibold mb-4">
-                    Required Skills
-                  </FieldLegend>
+
                   <FieldGroup className="space-y-6">
                     <Field>
                       <FieldLabel htmlFor="requiredSkills">
@@ -533,9 +531,7 @@ export const EditJobVacancyForm = ({
 
                 {/* Section 5: Job Description */}
                 <FieldSet>
-                  <FieldLegend className="text-lg font-semibold mb-4">
-                    Job Description
-                  </FieldLegend>
+
                   <FieldGroup className="space-y-6">
                     <Field>
                       <FieldLabel htmlFor="description">

@@ -22,6 +22,7 @@ export function NavMain({
     title: string;
     url: string;
     icon?: LucideIcon;
+    external?: boolean;
   }[];
 }) {
   const pathname = usePathname();
@@ -40,7 +41,7 @@ export function NavMain({
                 asChild
                 isActive={pathname === item.url}
               >
-                <Link href={item.url}>
+                <Link href={item.url} target={item.external ? "_blank" : undefined}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                 </Link>

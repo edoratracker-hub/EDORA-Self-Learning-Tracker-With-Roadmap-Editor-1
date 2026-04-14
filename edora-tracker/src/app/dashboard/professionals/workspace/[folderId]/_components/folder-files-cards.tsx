@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import {
   FileText,
   Clock,
@@ -47,25 +46,23 @@ function getAccentKey(id: string): string {
 /* ------------------------------------------------------------------ */
 /*  Single file card                                                   */
 /* ------------------------------------------------------------------ */
-function FileCard({ file }: { file: any }) {
+function FileCard({ file, userId }: { file: any; userId?: string }) {
   const colorKey = getAccentKey(file.id);
   const accent = accentMap[colorKey];
   const iconColor = iconAccentMap[colorKey];
 
-  // We could add delete functionality here if needed, 
-  // mirroring ClassroomCard's isDeleting state.
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Implementation for delete would go here
     toast.error("Delete not implemented for files yet.");
   };
 
   return (
     <Link
-      href={`/dashboard/students/workspace/file/${file.id}`}
+      href={`${process.env.NEXT_PUBLIC_EDITOR_URL || 'http://localhost:3001'}?fileId=${file.id}${userId ? `&userId=${userId}` : ''}`}
+      target="_blank"
       className={cn(
         "group relative flex flex-col rounded-xl border border-[#30363d] bg-[#161b22] overflow-hidden transition-all duration-300",
         "hover:border-[#484f58] hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5"
@@ -80,7 +77,7 @@ function FileCard({ file }: { file: any }) {
       />
 
       <div className="relative flex flex-col flex-1 p-5">
-        {/* Top row: type tag + action/badge */}
+        {/* Top row: type tag + action */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             {file.type === "DOCUMENT" ? "Document" : file.type}
@@ -101,13 +98,12 @@ function FileCard({ file }: { file: any }) {
           {file.name}
         </h3>
 
-        {/* Description / Template */}
-        {file.template && (
+        {/* Template */}
+        {file.template ? (
           <p className="text-xs text-muted-foreground line-clamp-2 mb-4 capitalize">
             {file.template} template
           </p>
-        )}
-        {!file.template && (
+        ) : (
           <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
             Blank document
           </p>
@@ -128,7 +124,7 @@ function FileCard({ file }: { file: any }) {
 
         {/* Footer: icon/info + action */}
         <div className="flex items-center justify-between mt-auto">
-          {/* File info (replacing head avatar) */}
+          {/* File info */}
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#21262d] ring-1 ring-[#30363d]">
               <FileText className="size-3.5 text-muted-foreground" />
@@ -160,7 +156,7 @@ function FileCard({ file }: { file: any }) {
 /* ------------------------------------------------------------------ */
 function EmptyFiles() {
   return (
-    <div className="col-span-full flex flex-col items-center justify-center py-24 text-muted-foreground border-2 border-dashed border-[#30363d] rounded-xl gap-4">
+    <div className="flex flex-col items-center justify-center py-24 text-muted-foreground border-2 border-dashed border-[#30363d] rounded-xl gap-4">
       <div className="size-16 rounded-2xl bg-[#21262d] flex items-center justify-center">
         <FileText className="size-8 opacity-30" />
       </div>

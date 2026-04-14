@@ -49,6 +49,8 @@ export const metadata: Metadata = {
   },
 };
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,11 +61,12 @@ export default function RootLayout({
       <head>
         <title>{metadata.title as string}</title>
         <meta name="description" content={metadata.description || ""} />
-        <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
       </head>
       <body
         className={`${ibmPlexSans.variable} ${bebasNeue.variable} ${ibmPlexMono.variable} font-sans antialiased overflow-x-hidden bg-background`}
+        suppressHydrationWarning
       >
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

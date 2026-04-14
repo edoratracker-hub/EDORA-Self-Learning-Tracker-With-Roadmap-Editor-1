@@ -57,6 +57,7 @@ export const DashboardPaths = {
       title: "Roadmap",
       url: "http://localhost:3002",
       icon: MapPinIcon,
+      external: true,
     },
     {
       title: "Career",

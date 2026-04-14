@@ -241,56 +241,9 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const [users, setUsers] = React.useState<z.infer<typeof schema>[]>([]);
-      const [userToDelete, setUserToDelete] = React.useState<string | null>(
-        null,
-      );
-
-      const handleDelete = async () => {
-        if (!userToDelete) return;
-        const res = await deleteUser(userToDelete);
-        if (res.success) {
-          setUsers(users.filter((user) => user.id.toString() !== userToDelete));
-          toast.success("User deleted successfully");
-        } else {
-          toast.error(res.error || "Failed to delete user");
-        }
-        setUserToDelete(null);
-      };
-
-      return (
-        <div className="">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                className="hover:text-red-500"
-              >
-                <Trash2Icon className="size-4" />
-                <span className="sr-only">Delete user</span>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your account from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction variant="destructive" onClick={handleDelete}>
-                  Continue
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      );
-    },
+    cell: ({ row, table }) => (
+      <ActionCell row={row} table={table} />
+    ),
   },
 ];
 
@@ -316,6 +269,62 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
         </TableCell>
       ))}
     </TableRow>
+  );
+}
+
+// Proper React component so hooks are valid
+function ActionCell({
+  row,
+  table,
+}: {
+  row: Row<z.infer<typeof schema>>;
+  table: import("@tanstack/react-table").Table<z.infer<typeof schema>>;
+}) {
+  const [loading, setLoading] = React.useState(false);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    const res = await deleteUser(row.original.id);
+    if (res.success) {
+      const meta = table.options.meta as { deleteRow?: (id: string) => void };
+      meta?.deleteRow?.(row.original.id);
+      toast.success("User deleted successfully");
+    } else {
+      toast.error(res.error || "Failed to delete user");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          className="hover:text-red-500"
+          disabled={loading}
+        >
+          <Trash2Icon className="size-4" />
+          <span className="sr-only">Delete user</span>
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the user{" "}
+            <strong>{row.original.user}</strong> and all of their data from our
+            servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={handleDelete}>
+            {loading ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -373,6 +382,9 @@ export function UsersDataTable({
           toast.error(res.error || "Failed to update role");
         }
       },
+      deleteRow: (id: string) => {
+        setData((prev) => prev.filter((row) => row.id !== id));
+      },
     },
     getRowId: (row) => row.id,
     enableRowSelection: true,
@@ -420,9 +432,9 @@ export function UsersDataTable({
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                       </TableHead>
                     );
                   })}

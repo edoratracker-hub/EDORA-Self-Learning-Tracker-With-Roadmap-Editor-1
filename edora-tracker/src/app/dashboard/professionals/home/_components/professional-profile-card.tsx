@@ -49,30 +49,5 @@ export const ProfessionalProfileCard = () => {
         );
     }
 
-    return (
-        <Alert className="relative border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
-            <AlertTriangleIcon className="h-4 w-4 text-amber-600" />
-            <AlertTitle>Professional Profile Incomplete</AlertTitle>
-            <AlertDescription>
-                Set up your professional background, skills, and expertise to unlock the full potential of your dashboard.
-            </AlertDescription>
-            <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 h-6 w-6 text-amber-900 hover:bg-amber-100 dark:text-amber-50 dark:hover:bg-amber-900"
-                onClick={() => setIsDismissed(true)}
-                aria-label="Dismiss alert"
-            >
-                <XIcon className="h-4 w-4" />
-            </Button>
 
-            <div className="mt-4">
-                <Button size="sm" asChild>
-                    <Link href="/dashboard/professionals/onboarding">
-                        Complete Profile
-                    </Link>
-                </Button>
-            </div>
-        </Alert>
-    );
 };

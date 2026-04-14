@@ -94,13 +94,11 @@ export const VerifyOtpForm = ({
 
       toast.success("Signed in successfully");
 
-
       let userRole = role;
       if (!userRole) {
         const statusRes = await checkUserStatus(data.email);
         userRole = statusRes.role ?? undefined;
       }
-
 
       if (userRole === "recruiter") {
 
@@ -119,8 +117,6 @@ export const VerifyOtpForm = ({
         }
       } else if (userRole === "student") {
         router.push("/dashboard/students");
-      } else if (userRole === "mentor") {
-        router.push("/dashboard/mentor/profile");
       } else if (userRole === "professional") {
         router.push("/dashboard/mentor-professional/profile-setup");
       } else if (userRole === "admin") {

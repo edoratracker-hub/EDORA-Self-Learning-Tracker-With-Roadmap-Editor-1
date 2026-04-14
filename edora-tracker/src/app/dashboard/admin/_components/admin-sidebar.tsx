@@ -22,6 +22,7 @@ import {
   LogOutIcon,
   HomeIcon,
   ChartAreaIcon,
+  DollarSign,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -56,6 +57,11 @@ export const menuItems = [
     title: "Analytics",
     icon: ChartAreaIcon,
     href: "/dashboard/admin/analytics",
+  },
+  {
+    title: "Subscriptions",
+    icon: DollarSign,
+    href: "/dashboard/admin/subscriptions",
   },
 ];
 

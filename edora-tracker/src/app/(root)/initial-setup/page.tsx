@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, ArrowRight, Check, ChevronLeft, Briefcase, GraduationCap, Star, Rocket } from "lucide-react";
 import { completeInitialSetup } from "@/app/actions/student-profile-actions";
-import { completeMentorInitialSetup } from "@/app/actions/mentor-profile-actions";
+import { completeMentorInitialSetup, submitForVerification } from "@/app/actions/mentor-profile-actions";
 import { completeProfessionalInitialSetup } from "@/app/actions/professional-profile-actions";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -145,7 +145,13 @@ export default function InitialSetupPage() {
 
             if (result?.success) {
                 toast.success("Profile saved!");
-                setShowSuccess(true);
+                if (role === "mentor") {
+                    // Trigger verification email to admin and redirect to pending screen
+                    await submitForVerification();
+                    router.push("/mentor-pending");
+                } else {
+                    setShowSuccess(true);
+                }
             } else {
                 toast.error(result?.error || "Something went wrong");
             }
