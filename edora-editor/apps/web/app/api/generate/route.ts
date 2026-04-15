@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { createGroq } from "@ai-sdk/groq";
 import { Ratelimit } from "@upstash/ratelimit";
 import { kv } from "@vercel/kv";
 import { streamText } from "ai";
@@ -8,9 +8,9 @@ import { match } from "ts-pattern";
 export const runtime = "edge";
 
 export async function POST(req: Request): Promise<Response> {
-  // Check if the OPENAI_API_KEY is set, if not return 400
-  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "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") {
-    return new Response("Missing GEMINI_API_KEY - make sure to add it to your .env file.", {
+  // Check if the GROQ_API_KEY is set, if not return 400
+  if (!process.env.GROQ_API_KEY) {
+    return new Response("Missing GROQ_API_KEY - make sure to add it to your .env file.", {
       status: 400,
     });
   }
@@ -43,7 +43,8 @@ export async function POST(req: Request): Promise<Response> {
         content:
           "You are an AI writing assistant that continues existing text based on context from prior text. " +
           "Give more weight/priority to the later characters than the beginning ones. " +
-          "Limit your response to no more than 200 characters, but make sure to construct complete sentences." +
+          "Limit your response to no more than 200 characters, but make sure to construct complete sentences. " +
+          "Return ONLY the requested text. Do NOT include any conversational filler, greetings, or explanations. " +
           "Use Markdown formatting when appropriate.",
       },
       {
@@ -56,7 +57,8 @@ export async function POST(req: Request): Promise<Response> {
         role: "system",
         content:
           "You are an AI writing assistant that improves existing text. " +
-          "Limit your response to no more than 200 characters, but make sure to construct complete sentences." +
+          "Limit your response to no more than 200 characters, but make sure to construct complete sentences. " +
+          "Return ONLY the improved text. Do NOT include any conversational filler, greetings, or explanations. " +
           "Use Markdown formatting when appropriate.",
       },
       {
@@ -68,7 +70,9 @@ export async function POST(req: Request): Promise<Response> {
       {
         role: "system",
         content:
-          "You are an AI writing assistant that shortens existing text. " + "Use Markdown formatting when appropriate.",
+          "You are an AI writing assistant that shortens existing text. " + 
+          "Return ONLY the shortened text. Do NOT include any conversational filler, greetings, or explanations. " + 
+          "Use Markdown formatting when appropriate.",
       },
       {
         role: "user",
@@ -80,6 +84,7 @@ export async function POST(req: Request): Promise<Response> {
         role: "system",
         content:
           "You are an AI writing assistant that lengthens existing text. " +
+          "Return ONLY the lengthened text. Do NOT include any conversational filler, greetings, or explanations. " +
           "Use Markdown formatting when appropriate.",
       },
       {
@@ -92,7 +97,8 @@ export async function POST(req: Request): Promise<Response> {
         role: "system",
         content:
           "You are an AI writing assistant that fixes grammar and spelling errors in existing text. " +
-          "Limit your response to no more than 200 characters, but make sure to construct complete sentences." +
+          "Limit your response to no more than 200 characters, but make sure to construct complete sentences. " +
+          "Return ONLY the fixed text. Do NOT include any conversational filler, greetings, or explanations. " +
           "Use Markdown formatting when appropriate.",
       },
       {
@@ -104,8 +110,9 @@ export async function POST(req: Request): Promise<Response> {
       {
         role: "system",
         content:
-          "You area an AI writing assistant that generates text based on a prompt. " +
-          "You take an input from the user and a command for manipulating the text" +
+          "You are an AI writing assistant that generates text based on a prompt. " +
+          "You take an input from the user and a command for manipulating the text. " +
+          "Return ONLY the generated text. Do NOT include any conversational filler, greetings, or explanations. " +
           "Use Markdown formatting when appropriate.",
       },
       {
@@ -115,14 +122,19 @@ export async function POST(req: Request): Promise<Response> {
     ])
     .run();
 
+  const groq = createGroq({
+    apiKey: process.env.GROQ_API_KEY,
+  });
+
   const result = await streamText({
+    system: messages[0].content,
     prompt: messages[messages.length - 1].content,
     maxTokens: 4096,
     temperature: 0.7,
     topP: 1,
     frequencyPenalty: 0,
     presencePenalty: 0,
-    model: openai("gpt-4o-mini"),
+    model: groq("llama-3.1-8b-instant"),
   });
 
   return result.toDataStreamResponse();
