@@ -16,6 +16,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Upload, Loader2 } from "lucide-react";
 import { authClient } from "@/app/lib/auth-client";
 import { toast } from "sonner";
+import { getProfessionalProfile, createOrUpdateProfessionalProfile } from "@/app/actions/professional-profile-actions";
 
 const initials = (name: string) =>
   name
@@ -36,9 +37,24 @@ export function ProfileSettings() {
   const [lastName, setLastName] = useState(nameParts.slice(1).join(" ") ?? "");
   const [username, setUsername] = useState(userName.toLowerCase().replace(/\s+/g, ""));
   const [image, setImage] = useState<string | null>(userImage);
+  const [bio, setBio] = useState("");
+  const [location, setLocation] = useState("");
+  const [website, setWebsite] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    async function loadProfile() {
+      const res = await getProfessionalProfile();
+      if (res.success && res.profile) {
+        setBio(res.profile.bio || "Professional expert in the industry.");
+        setLocation(res.profile.location || "");
+        setWebsite(res.profile.websiteUrl || "");
+      }
+    }
+    loadProfile();
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,13 +78,23 @@ export function ProfileSettings() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await authClient.updateUser({
+      // 1. Update basic auth session info (Name/Image)
+      const { error: authError } = await authClient.updateUser({
         name: `${firstName} ${lastName}`.trim(),
         image: image || undefined
       });
 
-      if (error) {
-        toast.error(error.message || "Failed to update profile");
+      // 2. Update the dedicated professionalProfile row
+      const profRes = await createOrUpdateProfessionalProfile({
+        bio,
+        location,
+        websiteUrl: website
+      });
+
+      if (authError) {
+        toast.error(authError.message || "Failed to update auth profile");
+      } else if (!profRes.success) {
+        toast.error(profRes.error || "Failed to update extended profile details");
       } else {
         toast.success("Profile updated successfully");
       }
@@ -160,7 +186,8 @@ export function ProfileSettings() {
                 id="bio"
                 placeholder="Tell us about yourself..."
                 rows={4}
-                defaultValue="Professional expert in the industry."
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 Brief description for your profile. Max 200 characters.
@@ -172,7 +199,8 @@ export function ProfileSettings() {
               <Input
                 id="location"
                 placeholder="City, Country"
-                defaultValue=""
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
               />
             </div>
 
@@ -182,7 +210,8 @@ export function ProfileSettings() {
                 id="website"
                 type="url"
                 placeholder="https://example.com"
-                defaultValue=""
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
               />
             </div>
           </div>

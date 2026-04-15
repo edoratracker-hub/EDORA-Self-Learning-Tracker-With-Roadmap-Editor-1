@@ -105,12 +105,7 @@ const groups: GroupType[] = [
         type: 'role',
         otherGroups: ['Web Development', 'Absolute Beginners'],
       },
-      {
-        title: 'API Design',
-        link: '/api-design',
-        type: 'role',
-        otherGroups: ['Web Development'],
-      },
+
       {
         title: 'QA',
         link: '/qa',
@@ -570,12 +565,7 @@ const groups: GroupType[] = [
         type: 'best-practice',
         otherGroups: ['Web Development', 'DevOps'],
       },
-      {
-        title: 'API Security',
-        link: '/api-security-best-practices',
-        type: 'best-practice',
-        otherGroups: ['Web Development'],
-      },
+
     ],
   },
 ];
@@ -671,7 +661,7 @@ export function RoadmapsPage() {
       return;
     }
 
-    loadProgress().finally(() => {});
+    loadProgress().finally(() => { });
   }, []);
 
   useEffect(() => {

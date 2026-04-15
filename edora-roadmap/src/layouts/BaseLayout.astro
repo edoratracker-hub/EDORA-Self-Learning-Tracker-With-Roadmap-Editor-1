@@ -2,23 +2,17 @@
 import '../styles/global.css';
 
 import Analytics from '../components/Analytics/Analytics.astro';
-import Clarity from '../components/Analytics/Clarity.astro';
 import GoogleAd from '../components/Analytics/GoogleAd.astro';
-import GoogleAdSlot from '../components/Analytics/GoogleAdSlot.astro';
-import Hubspot from '../components/Analytics/Hubspot.astro';
-import RedditPixel from '../components/Analytics/RedditPixel.astro';
-import { CommandMenu } from '../components/CommandMenu/CommandMenu';
-import Footer from '../components/Footer.astro';
 
-import OpenSourceBanner from '../components/OpenSourceBanner.astro';
+import { CommandMenu } from '../components/CommandMenu/CommandMenu';
+
+
 import { PageProgress } from '../components/PageProgress';
 import { PageVisit } from '../components/PageVisit/PageVisit';
 import { Toaster } from '../components/Toast';
 import { siteConfig } from '../lib/config';
 import type { ResourceType } from '../lib/resource-progress';
-import Bluconic from '../components/Analytics/Bluconic.astro';
-import OneTrust from '../components/Analytics/OneTrust.astro';
-import LinkedIn from '../components/Analytics/LinkedIn.astro';
+
 import { cn } from '../lib/classname';
 import { GlobalUpgradeModal } from '../components/Billing/GlobalUpgradeModal';
 
@@ -47,7 +41,6 @@ const {
   bodyClassName,
   briefTitle,
   description = siteConfig.description,
-  ogImageUrl = 'https://roadmap.sh/img/og-img.png',
   keywords = siteConfig.keywords,
   noIndex = false,
   permalink = '',
@@ -99,10 +92,7 @@ const gaPageIdentifier = Astro.url.pathname
 
     <meta property='og:image:width' content='1200' />
     <meta property='og:image:height' content='630' />
-    <meta
-      property='og:image'
-      content={ogImageUrl || 'https://roadmap.sh/img/og-img.png'}
-    />
+   
     <meta property='og:image:alt' content='roadmap.sh' />
     <meta property='og:site_name' content='roadmap.sh' />
     <meta property='og:title' content={title} />
@@ -148,11 +138,11 @@ const gaPageIdentifier = Astro.url.pathname
     />
     <link
       rel='shortcut icon'
-      href='/manifest/favicon.ico'
-      type='image/x-icon'
+      href='/manifest/icon32.png'
+      type='image/png'
     />
 
-    <link rel='icon' href='/manifest/favicon.ico' type='image/x-icon' />
+    <link rel='icon' href='/manifest/icon32.png' type='image/png' />
 
     <link rel='preconnect' href='https://www.google-analytics.com/' />
     <link rel='preconnect' href='https://api.roadmap.sh/' />
@@ -201,6 +191,6 @@ const gaPageIdentifier = Astro.url.pathname
       client:load
     />
 
-    {!import.meta.env.DEV && <LinkedIn />}
+   
   </body>
 </html>
