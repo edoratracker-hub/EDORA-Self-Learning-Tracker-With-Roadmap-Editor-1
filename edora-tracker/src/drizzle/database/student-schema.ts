@@ -68,6 +68,9 @@ export const studentProfile = pgTable("student_profile", {
   portfolioLink: text("portfolio_link"),
   githubLink: text("github_link"),
   hasResume: boolean("has_resume"),
+  resumeUrl: text("resume_url"),
+  phoneNumber: text("phone_number"),
+  address: text("address"),
 
   // 7) Time, Habits & Discipline
   dailyStudyHours: integer("daily_study_hours"),

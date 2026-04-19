@@ -5,6 +5,7 @@ import { user } from "./auth-schema";
 export const classroomMemberRoleEnum = pgEnum("classroom_member_role", [
     "head",
     "student",
+    "mentor",
 ]);
 
 export const classrooms = pgTable("classrooms", {

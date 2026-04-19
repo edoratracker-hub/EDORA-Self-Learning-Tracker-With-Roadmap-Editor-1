@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, ArrowRight, Check, ChevronLeft, Briefcase, GraduationCap, Star, Rocket, UploadCloud, FileText, Trash2 } from "lucide-react";
+import { Loader2, ArrowRight, Check, ChevronLeft, Briefcase, GraduationCap, Star, Rocket } from "lucide-react";
 import { completeInitialSetup } from "@/app/actions/student-profile-actions";
 import { completeMentorInitialSetup, submitForVerification } from "@/app/actions/mentor-profile-actions";
 import { completeProfessionalInitialSetup } from "@/app/actions/professional-profile-actions";
@@ -34,10 +34,11 @@ const STUDENT_EDUCATION_OPTIONS = [
     { id: "self_taught", label: "Self-Learner", description: "Learning outside formal education" },
 ];
 
-const SKILL_LEVELS = [
-    { id: "beginner", label: "Beginner", description: "Just starting out, learning the fundamentals." },
-    { id: "intermediate", label: "Intermediate", description: "Have some experience, building projects." },
-    { id: "pro", label: "Pro", description: "Advanced skills, ready for professional work." },
+const EXPERIENCE_LEVELS = [
+    { id: "none", label: "No Experience", description: "Just starting my journey" },
+    { id: "projects", label: "Project Based", description: "Built some personal projects" },
+    { id: "internship", label: "Internships", description: "Experienced professional setting" },
+    { id: "pro", label: "Working Professional", description: "Currently employed or freelance" },
 ];
 
 const MENTOR_EXP_YEARS = ["0-2 years", "3-5 years", "5-10 years", "10+ years"];
@@ -54,20 +55,22 @@ export default function InitialSetupPage() {
         name: "",
         fullName: "",
         location: "",
+        phoneNumber: "",
+        address: "",
         bio: "",
         skills: [] as string[],
-        skillLevel: "",
-        resumeFile: null as File | null,
 
         // Student specific
         currentEducation: "",
         experienceLevel: "",
         studyGoal: "",
+        resumeUrl: "",
 
         // Mentor/Pro specific
         yearsOfExperience: "",
         currentRole: "",
         industry: "",
+        teachingProfession: "",
     });
 
     useEffect(() => {
@@ -121,26 +124,35 @@ export default function InitialSetupPage() {
                     programmingLanguages: formData.skills.filter((s: string) => ["Python", "JavaScript", "TypeScript", "Node.js"].includes(s)),
                     computerSkills: formData.skills,
                     jobTypePreference: "Any",
+                    resumeUrl: formData.resumeUrl,
+                    phoneNumber: formData.phoneNumber,
+                    address: formData.address,
                 });
             } else if (role === "mentor") {
                 result = await completeMentorInitialSetup({
                     fullName: formData.fullName,
                     location: formData.location || "Remote",
+                    address: formData.address,
+                    phone: formData.phoneNumber,
                     bio: formData.bio || `Experienced ${formData.currentRole} in ${formData.industry}`,
                     yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
                     industry: formData.industry,
                     expertise: formData.skills,
                     currentRole: formData.currentRole,
+                    teachingProfession: formData.teachingProfession,
                 });
             } else if (role === "professional") {
                 result = await completeProfessionalInitialSetup({
                     fullName: formData.fullName,
                     location: formData.location || "Remote",
+                    address: formData.address,
+                    phone: formData.phoneNumber,
                     bio: formData.bio || `Professional ${formData.currentRole} focusing on ${formData.industry}`,
                     yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
                     industry: formData.industry,
                     expertise: formData.skills,
                     currentRole: formData.currentRole,
+                    teachingProfession: formData.teachingProfession,
                 });
             }
 
@@ -211,9 +223,9 @@ export default function InitialSetupPage() {
         );
     }
 
-    const totalSteps = 4;
-    const progress = (step / (totalSteps - 1)) * 100;
     const role = getRole(session);
+    const totalSteps = role === "student" ? 5 : 4;
+    const progress = (step / (totalSteps - 1)) * 100;
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#050505] overflow-hidden">
@@ -250,120 +262,252 @@ export default function InitialSetupPage() {
                                 {step === 0 && (
                                     <div className="space-y-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="name" className="text-xl font-medium block">What should we call you?</Label>
+                                            <Label htmlFor="name" className="text-lg font-medium">What should we call you?</Label>
                                             <p className="text-sm text-muted-foreground mb-4">This name will be visible on your profile and dashboard.</p>
                                             <Input
                                                 id="name"
                                                 autoFocus
                                                 required
                                                 className="h-14 text-xl bg-background/50 border-white/10 focus:border-primary/50"
-                                                value={formData.fullName || formData.name}
+                                                value={role === 'student' ? formData.name : formData.fullName}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
-                                                    setFormData({ ...formData, name: val, fullName: val });
+                                                    if (role === 'student') setFormData({ ...formData, name: val });
+                                                    else setFormData({ ...formData, fullName: val });
                                                 }}
                                                 placeholder="Enter your full name"
                                             />
                                         </div>
-                                    </div>
-                                )}
-
-                                {/* Step 1: Current Profession */}
-                                {step === 1 && (
-                                    <div className="space-y-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="profession" className="text-xl font-medium block">What is your current profession?</Label>
-                                            <p className="text-sm text-muted-foreground mb-4">E.g. Computer Science Student, Frontend Developer, Product Manager</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="phone">Phone Number</Label>
+                                                <Input
+                                                    id="phone"
+                                                    className="h-12 bg-background/50 border-white/10"
+                                                    placeholder="+1 (555) 000-0000"
+                                                    value={formData.phoneNumber}
+                                                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="location">General Location</Label>
+                                                <Input
+                                                    id="location"
+                                                    className="h-12 bg-background/50 border-white/10"
+                                                    placeholder="City, Country"
+                                                    value={formData.location}
+                                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2 mt-4">
+                                            <Label htmlFor="address">Full Address</Label>
                                             <Input
-                                                id="profession"
-                                                autoFocus
-                                                required
-                                                className="h-14 text-xl bg-background/50 border-white/10 focus:border-primary/50"
-                                                value={formData.currentRole || formData.currentEducation}
-                                                onChange={(e) => setFormData({ ...formData, currentRole: e.target.value, currentEducation: e.target.value })}
-                                                placeholder="Enter your profession or major"
+                                                id="address"
+                                                className="h-12 bg-background/50 border-white/10"
+                                                placeholder="Enter your street address"
+                                                value={formData.address}
+                                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                             />
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Step 2: Skill Level */}
+                                {/* Step 1: Background (Role Specific) */}
+                                {step === 1 && (
+                                    <div className="space-y-6">
+                                        <Label className="text-xl font-medium block mb-4">
+                                            {role === 'student' ? "Tell us about your education" : "Select your experience level"}
+                                        </Label>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {role === 'student' ? (
+                                                STUDENT_EDUCATION_OPTIONS.map((opt) => (
+                                                    <button
+                                                        key={opt.id}
+                                                        onClick={() => setFormData({ ...formData, currentEducation: opt.label })}
+                                                        className={cn(
+                                                            "flex flex-col items-start text-left p-5 rounded-xl border transition-all duration-200 group",
+                                                            formData.currentEducation === opt.label
+                                                                ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                                                                : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                                                        )}
+                                                    >
+                                                        <GraduationCap className={cn("h-6 w-6 mb-3 transition-colors", formData.currentEducation === opt.label ? "text-primary" : "text-muted-foreground")} />
+                                                        <span className="font-semibold text-base mb-1">{opt.label}</span>
+                                                        <span className="text-xs text-muted-foreground leading-relaxed">{opt.description}</span>
+                                                    </button>
+                                                ))
+                                            ) : (
+                                                MENTOR_EXP_YEARS.map((years) => (
+                                                    <button
+                                                        key={years}
+                                                        onClick={() => setFormData({ ...formData, yearsOfExperience: years })}
+                                                        className={cn(
+                                                            "flex items-center justify-between p-6 rounded-xl border transition-all duration-200",
+                                                            formData.yearsOfExperience === years
+                                                                ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                                                                : "border-white/10 bg-white/5 hover:border-white/20"
+                                                        )}
+                                                    >
+                                                        <span className="font-semibold text-lg">{years}</span>
+                                                        {formData.yearsOfExperience === years && <Check className="h-5 w-5 text-primary" />}
+                                                    </button>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Step 2: Experience / Current Status */}
                                 {step === 2 && (
                                     <div className="space-y-6">
-                                        <Label className="text-xl font-medium block mb-4">Select your skill level</Label>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            {SKILL_LEVELS.map((lvl) => (
+                                        <Label className="text-xl font-medium block mb-4">
+                                            {role === 'student' ? "Your current experience level" : "Your current role"}
+                                        </Label>
+
+                                        {role === 'student' ? (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {EXPERIENCE_LEVELS.map((lvl) => (
+                                                    <button
+                                                        key={lvl.id}
+                                                        onClick={() => setFormData({ ...formData, experienceLevel: lvl.label })}
+                                                        className={cn(
+                                                            "flex items-center gap-4 p-5 rounded-xl border transition-all duration-200 text-left",
+                                                            formData.experienceLevel === lvl.label
+                                                                ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                                                                : "border-white/10 bg-white/5 hover:border-white/20"
+                                                        )}
+                                                    >
+                                                        <div className={cn("p-3 rounded-lg bg-background", formData.experienceLevel === lvl.label ? "text-primary" : "text-muted-foreground")}>
+                                                            <Briefcase className="h-6 w-6" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="font-semibold flex items-center gap-2">
+                                                                {lvl.label}
+                                                                {formData.experienceLevel === lvl.label && <Check className="h-4 w-4 text-primary" />}
+                                                            </div>
+                                                            <p className="text-xs text-muted-foreground mt-0.5">{lvl.description}</p>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-6">
+                                                <div className="space-y-4">
+                                                    <Label>Current Title</Label>
+                                                    <Input
+                                                        className="h-14 bg-background/50 border-white/10"
+                                                        placeholder="e.g. Senior Software Engineer"
+                                                        value={formData.currentRole}
+                                                        onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <Label>Teaching Profession (Optional)</Label>
+                                                    <Input
+                                                        className="h-14 bg-background/50 border-white/10"
+                                                        placeholder="e.g. Part-time Instructor, Guest Lecturer"
+                                                        value={formData.teachingProfession}
+                                                        onChange={(e) => setFormData({ ...formData, teachingProfession: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <Label>Industry</Label>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        {["Technology", "Finance", "Healthcare", "Education", "Design", "Marketing"].map(ind => (
+                                                            <button
+                                                                key={ind}
+                                                                onClick={() => setFormData({ ...formData, industry: ind })}
+                                                                className={cn(
+                                                                    "px-4 py-3 rounded-lg border text-sm transition-all",
+                                                                    formData.industry === ind ? "border-primary bg-primary/10" : "border-white/10 hover:border-white/20"
+                                                                )}
+                                                            >
+                                                                {ind}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Step 3: Skills Selection */}
+                                {step === 3 && (
+                                    <div className="space-y-6">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <Label className="text-xl font-medium">Identify your skill set</Label>
+                                            <Badge variant="outline" className="text-primary border-primary/20">
+                                                {formData.skills.length} Selected
+                                            </Badge>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            {SKILLS_LIST.map((skill) => (
                                                 <button
-                                                    key={lvl.id}
-                                                    onClick={() => setFormData({ ...formData, experienceLevel: lvl.label })}
+                                                    key={skill}
+                                                    onClick={() => toggleSkill(skill)}
                                                     className={cn(
-                                                        "flex items-center gap-4 p-5 rounded-xl border transition-all duration-200 text-left",
-                                                        formData.experienceLevel === lvl.label
-                                                            ? "border-primary bg-primary/10 ring-1 ring-primary/30"
-                                                            : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                                                        "px-4 py-4 rounded-xl border text-sm font-medium transition-all flex flex-col items-center justify-center gap-2",
+                                                        formData.skills.includes(skill)
+                                                            ? "border-primary bg-primary/20 text-primary shadow-lg shadow-primary/10"
+                                                            : "border-white/5 bg-white/5 hover:border-white/20 text-muted-foreground hover:text-foreground"
                                                     )}
                                                 >
-                                                    <div className={cn("p-3 rounded-lg bg-background", formData.experienceLevel === lvl.label ? "text-primary" : "text-muted-foreground")}>
-                                                        <Briefcase className="h-6 w-6" />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="font-semibold flex items-center gap-2">
-                                                            {lvl.label}
-                                                            {formData.experienceLevel === lvl.label && <Check className="h-4 w-4 text-primary" />}
-                                                        </div>
-                                                        <p className="text-xs text-muted-foreground mt-0.5">{lvl.description}</p>
-                                                    </div>
+                                                    <Star className={cn("h-4 w-4", formData.skills.includes(skill) ? "fill-primary" : "hidden")} />
+                                                    {skill}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Step 3: Resume Upload */}
-                                {step === 3 && (
+                                {/* Step 4: Resume (Student Only) */}
+                                {step === 4 && role === "student" && (
                                     <div className="space-y-6">
-                                        <div>
-                                            <Label className="text-xl font-medium block">Upload your resume (Optional)</Label>
-                                            <p className="text-sm text-muted-foreground mt-1">You can always update this later in settings.</p>
-                                        </div>
-                                        
-                                        {formData.resumeFile ? (
-                                            <div className="flex items-center justify-between p-4 border border-primary/20 bg-primary/5 rounded-xl">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="p-3 bg-primary/10 rounded-lg">
-                                                        <FileText className="h-6 w-6 text-primary" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium line-clamp-1">{formData.resumeFile.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{(formData.resumeFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                                                    </div>
-                                                </div>
-                                                <Button variant="ghost" size="icon" onClick={() => setFormData({...formData, resumeFile: null})} className="text-muted-foreground hover:text-destructive">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                        <Label className="text-xl font-medium block mb-4">Upload your resume</Label>
+                                        <div className="border-2 border-dashed border-white/10 rounded-2xl p-10 flex flex-col items-center justify-center gap-4 bg-white/5">
+                                            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                                                <Rocket className="h-8 w-8 text-primary" />
                                             </div>
-                                        ) : (
-                                            <label htmlFor="resume-upload" className="border-2 border-dashed border-white/10 hover:border-primary/50 transition-colors bg-white/5 hover:bg-white/10 rounded-xl p-8 flex flex-col items-center justify-center gap-4 cursor-pointer group">
-                                                <div className="p-4 bg-white/5 group-hover:bg-primary/10 rounded-full transition-colors">
-                                                    <UploadCloud className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                                                </div>
-                                                <div className="text-center">
-                                                    <p className="text-sm font-medium mb-1">Click to upload or drag and drop</p>
-                                                    <p className="text-xs text-muted-foreground">PDF, DOCX up to 5MB</p>
-                                                </div>
-                                                <Input 
-                                                    id="resume-upload" 
-                                                    type="file" 
-                                                    accept=".pdf,.doc,.docx" 
-                                                    className="hidden" 
-                                                    onChange={(e) => {
-                                                        if (e.target.files && e.target.files[0]) {
-                                                            setFormData({...formData, resumeFile: e.target.files[0]});
-                                                        }
-                                                    }}
-                                                />
-                                            </label>
-                                        )}
+                                            <div className="text-center">
+                                                <p className="font-semibold">Click to upload or drag and drop</p>
+                                                <p className="text-sm text-muted-foreground">PDF, DOCX (Max 5MB)</p>
+                                            </div>
+                                            <Input
+                                                type="file"
+                                                className="hidden"
+                                                id="resume-upload"
+                                                accept=".pdf"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = (event) => {
+                                                            if (event.target?.result) {
+                                                                setFormData({ ...formData, resumeUrl: event.target.result as string });
+                                                                toast.success(`Resume "${file.name}" ready!`);
+                                                            }
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => document.getElementById('resume-upload')?.click()}
+                                                className="mt-2"
+                                            >
+                                                Select File
+                                            </Button>
+                                            {formData.resumeUrl && (
+                                                <Badge variant="secondary" className="mt-2">
+                                                    File ready for upload
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
 
