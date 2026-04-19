@@ -55,6 +55,8 @@ export default function InitialSetupPage() {
         name: "",
         fullName: "",
         location: "",
+        phoneNumber: "",
+        address: "",
         bio: "",
         skills: [] as string[],
 
@@ -62,11 +64,13 @@ export default function InitialSetupPage() {
         currentEducation: "",
         experienceLevel: "",
         studyGoal: "",
+        resumeUrl: "",
 
         // Mentor/Pro specific
         yearsOfExperience: "",
         currentRole: "",
         industry: "",
+        teachingProfession: "",
     });
 
     useEffect(() => {
@@ -120,26 +124,35 @@ export default function InitialSetupPage() {
                     programmingLanguages: formData.skills.filter((s: string) => ["Python", "JavaScript", "TypeScript", "Node.js"].includes(s)),
                     computerSkills: formData.skills,
                     jobTypePreference: "Any",
+                    resumeUrl: formData.resumeUrl,
+                    phoneNumber: formData.phoneNumber,
+                    address: formData.address,
                 });
             } else if (role === "mentor") {
                 result = await completeMentorInitialSetup({
                     fullName: formData.fullName,
                     location: formData.location || "Remote",
+                    address: formData.address,
+                    phone: formData.phoneNumber,
                     bio: formData.bio || `Experienced ${formData.currentRole} in ${formData.industry}`,
                     yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
                     industry: formData.industry,
                     expertise: formData.skills,
                     currentRole: formData.currentRole,
+                    teachingProfession: formData.teachingProfession,
                 });
             } else if (role === "professional") {
                 result = await completeProfessionalInitialSetup({
                     fullName: formData.fullName,
                     location: formData.location || "Remote",
+                    address: formData.address,
+                    phone: formData.phoneNumber,
                     bio: formData.bio || `Professional ${formData.currentRole} focusing on ${formData.industry}`,
                     yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
                     industry: formData.industry,
                     expertise: formData.skills,
                     currentRole: formData.currentRole,
+                    teachingProfession: formData.teachingProfession,
                 });
             }
 
@@ -210,9 +223,9 @@ export default function InitialSetupPage() {
         );
     }
 
-    const totalSteps = 4;
-    const progress = (step / (totalSteps - 1)) * 100;
     const role = getRole(session);
+    const totalSteps = role === "student" ? 5 : 4;
+    const progress = (step / (totalSteps - 1)) * 100;
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#050505] overflow-hidden">
@@ -263,6 +276,38 @@ export default function InitialSetupPage() {
                                                     else setFormData({ ...formData, fullName: val });
                                                 }}
                                                 placeholder="Enter your full name"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="phone">Phone Number</Label>
+                                                <Input
+                                                    id="phone"
+                                                    className="h-12 bg-background/50 border-white/10"
+                                                    placeholder="+1 (555) 000-0000"
+                                                    value={formData.phoneNumber}
+                                                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="location">General Location</Label>
+                                                <Input
+                                                    id="location"
+                                                    className="h-12 bg-background/50 border-white/10"
+                                                    placeholder="City, Country"
+                                                    value={formData.location}
+                                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2 mt-4">
+                                            <Label htmlFor="address">Full Address</Label>
+                                            <Input
+                                                id="address"
+                                                className="h-12 bg-background/50 border-white/10"
+                                                placeholder="Enter your street address"
+                                                value={formData.address}
+                                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                             />
                                         </div>
                                     </div>
@@ -359,6 +404,15 @@ export default function InitialSetupPage() {
                                                     />
                                                 </div>
                                                 <div className="space-y-4">
+                                                    <Label>Teaching Profession (Optional)</Label>
+                                                    <Input
+                                                        className="h-14 bg-background/50 border-white/10"
+                                                        placeholder="e.g. Part-time Instructor, Guest Lecturer"
+                                                        value={formData.teachingProfession}
+                                                        onChange={(e) => setFormData({ ...formData, teachingProfession: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-4">
                                                     <Label>Industry</Label>
                                                     <div className="grid grid-cols-2 gap-3">
                                                         {["Technology", "Finance", "Healthcare", "Education", "Design", "Marketing"].map(ind => (
@@ -406,6 +460,53 @@ export default function InitialSetupPage() {
                                                     {skill}
                                                 </button>
                                             ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Step 4: Resume (Student Only) */}
+                                {step === 4 && role === "student" && (
+                                    <div className="space-y-6">
+                                        <Label className="text-xl font-medium block mb-4">Upload your resume</Label>
+                                        <div className="border-2 border-dashed border-white/10 rounded-2xl p-10 flex flex-col items-center justify-center gap-4 bg-white/5">
+                                            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                                                <Rocket className="h-8 w-8 text-primary" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="font-semibold">Click to upload or drag and drop</p>
+                                                <p className="text-sm text-muted-foreground">PDF, DOCX (Max 5MB)</p>
+                                            </div>
+                                            <Input
+                                                type="file"
+                                                className="hidden"
+                                                id="resume-upload"
+                                                accept=".pdf"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = (event) => {
+                                                            if (event.target?.result) {
+                                                                setFormData({ ...formData, resumeUrl: event.target.result as string });
+                                                                toast.success(`Resume "${file.name}" ready!`);
+                                                            }
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => document.getElementById('resume-upload')?.click()}
+                                                className="mt-2"
+                                            >
+                                                Select File
+                                            </Button>
+                                            {formData.resumeUrl && (
+                                                <Badge variant="secondary" className="mt-2">
+                                                    File ready for upload
+                                                </Badge>
+                                            )}
                                         </div>
                                     </div>
                                 )}

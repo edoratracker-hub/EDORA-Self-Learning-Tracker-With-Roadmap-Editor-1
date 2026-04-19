@@ -1,7 +1,7 @@
 import { db } from "@/drizzle/db";
-import { classrooms, classroomMembers, notifications } from "@/drizzle/schema";
+import { classrooms, classroomMembers, notifications, mentorProfile, professionalProfile } from "@/drizzle/schema";
 import { user } from "@/drizzle/schema";
-import { eq, and, ilike, inArray, or } from "drizzle-orm";
+import { eq, and, ilike, inArray, or, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 const corsHeaders = {
@@ -14,7 +14,7 @@ export async function OPTIONS() {
     return new NextResponse(null, { headers: corsHeaders });
 }
 
-// GET /api/classroom/external/[id]/invite?q=query — search students
+// GET /api/classroom/external/[id]/invite?q=query — search students & mentors
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
@@ -25,14 +25,25 @@ export async function GET(req: Request) {
         }
 
         const results = await db
-            .select({ id: user.id, name: user.name, email: user.email, image: user.image, role: user.role })
+            .select({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                role: user.role,
+                profession: sql<string>`COALESCE(${mentorProfile.teachingProfession}, ${professionalProfile.teachingProfession})`
+            })
             .from(user)
+            .leftJoin(mentorProfile, eq(user.id, mentorProfile.userId))
+            .leftJoin(professionalProfile, eq(user.id, professionalProfile.userId))
             .where(
                 and(
                     inArray(user.role, ["student", "mentor", "professional"]),
                     or(
                         ilike(user.name, `%${q}%`),
-                        ilike(user.email, `%${q}%`)
+                        ilike(user.email, `%${q}%`),
+                        ilike(mentorProfile.teachingProfession, `%${q}%`),
+                        ilike(professionalProfile.teachingProfession, `%${q}%`)
                     )
                 )
             )
@@ -40,6 +51,7 @@ export async function GET(req: Request) {
 
         return NextResponse.json({ success: true, users: results }, { headers: corsHeaders });
     } catch (error: any) {
+        console.error("Search error:", error);
         return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
     }
 }
@@ -77,11 +89,22 @@ export async function POST(
             return NextResponse.json({ error: "User is already a member." }, { status: 409, headers: corsHeaders });
         }
 
+        // Get the invited user's base role
+        const targetUser = await db.query.user.findFirst({
+            where: eq(user.id, userId),
+        });
+
+        if (!targetUser) {
+            return NextResponse.json({ error: "User not found" }, { status: 404, headers: corsHeaders });
+        }
+
+        const classroomRole = (targetUser.role === "mentor" || targetUser.role === "professional") ? "mentor" : "student";
+
         await db.insert(classroomMembers).values({
             id: crypto.randomUUID(),
             classroomId,
             userId,
-            role: "student",
+            role: classroomRole,
         });
 
         await db

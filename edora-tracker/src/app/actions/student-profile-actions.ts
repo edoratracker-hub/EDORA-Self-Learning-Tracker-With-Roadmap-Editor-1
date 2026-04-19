@@ -58,6 +58,9 @@ export interface StudentProfileData {
     portfolioLink?: string;
     githubLink?: string;
     hasResume?: boolean;
+    resumeUrl?: string;
+    phoneNumber?: string;
+    address?: string;
 
     // 7) Time, Habits & Discipline
     dailyStudyHours?: number;
@@ -204,6 +207,9 @@ export async function completeInitialSetup(data: {
     programmingLanguages?: string[];
     computerSkills?: string[];
     jobTypePreference?: string;
+    resumeUrl?: string;
+    phoneNumber?: string;
+    address?: string;
 }) {
     try {
         const session = await auth.api.getSession({

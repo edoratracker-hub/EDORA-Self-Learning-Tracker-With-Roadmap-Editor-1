@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ArrowLeft, Share2, Crown, Copy, Check, Link as LinkIcon, Search, Loader2 } from "lucide-react";
+import { ArrowLeft, Share2, Crown, Copy, Check, Link as LinkIcon, Search, Loader2, Users } from "lucide-react";
 import * as Popover from "@radix-ui/react-popover";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -12,7 +12,7 @@ interface Member {
   name: string | null;
   email: string;
   image: string | null;
-  role: "head" | "student";
+  role: "head" | "student" | "mentor";
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -236,7 +236,7 @@ function SharePopover({ classroomId, classroomName }: { classroomId: string; cla
                 <input
                   id="student-search-input"
                   type="text"
-                  placeholder="Search by name or email..."
+                  placeholder="Search by name, email or profession..."
                   className="w-full pl-8 pr-3 h-9 text-xs rounded-md border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                   value={query}
                   onChange={(e) => handleSearch(e.target.value)}
@@ -264,7 +264,14 @@ function SharePopover({ classroomId, classroomName }: { classroomId: string; cla
                           size="size-7"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{u.name}</p>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className="text-xs font-medium truncate">{u.name}</p>
+                            {u.role !== 'student' && u.profession && (
+                               <span className="text-[9px] px-1 py-0 h-3.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-sm flex items-center shrink-0">
+                                 {u.profession}
+                               </span>
+                            )}
+                          </div>
                           <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>
                         </div>
                         <button
@@ -329,9 +336,13 @@ function ClassroomCollaborators({
             label={
               <span className="flex items-end gap-1.5">
                 {member.role === "head" && <Crown className="size-3 text-amber-400" />}
+                {member.role === "mentor" && <Users className="size-3 text-blue-400" />}
                 {member.name ?? member.email}
                 {member.role === "head" && (
                   <span className="text-amber-400 text-[10px]">(Head)</span>
+                )}
+                {member.role === "mentor" && (
+                  <span className="text-blue-400 text-[10px]">(Mentor)</span>
                 )}
               </span>
             }
@@ -349,6 +360,11 @@ function ClassroomCollaborators({
               {member.role === "head" && (
                 <span className="absolute -top-1 -right-0.5 size-3.5 rounded-full bg-amber-500 flex items-center justify-center ring-1 ring-background">
                   <Crown className="size-2 text-white" />
+                </span>
+              )}
+              {member.role === "mentor" && (
+                <span className="absolute -top-1 -right-0.5 size-3.5 rounded-full bg-blue-500 flex items-center justify-center ring-1 ring-background">
+                  <Users className="size-2 text-white" />
                 </span>
               )}
             </div>

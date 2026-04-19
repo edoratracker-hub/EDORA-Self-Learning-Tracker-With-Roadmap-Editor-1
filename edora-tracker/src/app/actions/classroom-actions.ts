@@ -178,11 +178,20 @@ export async function addStudentToClassroom(classroomId: string, targetUserId: s
         });
         if (existing) return { success: false, error: "User is already a member." };
 
+        // Get target user's role to determine classroom role
+        const targetUser = await db.query.user.findFirst({
+            where: eq(user.id, targetUserId)
+        });
+
+        if (!targetUser) return { success: false, error: "User not found" };
+
+        const classroomRole = (targetUser.role === "mentor" || targetUser.role === "professional") ? "mentor" : "student";
+
         await db.insert(classroomMembers).values({
             id: crypto.randomUUID(),
             classroomId,
             userId: targetUserId,
-            role: "student",
+            role: classroomRole,
         });
 
         // Increment member count

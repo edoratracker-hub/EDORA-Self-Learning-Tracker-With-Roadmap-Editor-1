@@ -1,0 +1,1 @@
+ALTER TYPE "public"."classroom_member_role" ADD VALUE 'mentor';

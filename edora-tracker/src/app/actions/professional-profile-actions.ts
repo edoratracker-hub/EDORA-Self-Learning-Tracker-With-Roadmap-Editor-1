@@ -12,6 +12,7 @@ export interface ProfessionalProfileData {
     email?: string;
     phone?: string;
     location?: string;
+    address?: string;
     bio?: string;
     profileImage?: string;
 
@@ -21,6 +22,7 @@ export interface ProfessionalProfileData {
     industry?: string;
     yearsOfExperience?: number;
     currentRole?: string;
+    teachingProfession?: string;
     previousRoles?: string[];
 
     // Education & Qualifications
@@ -135,11 +137,14 @@ export async function createOrUpdateProfessionalProfile(data: ProfessionalProfil
 export async function completeProfessionalInitialSetup(data: { 
     fullName: string; 
     location: string; 
+    address?: string;
+    phone?: string;
     bio: string;
     yearsOfExperience?: number;
     industry?: string;
     expertise?: string[];
     currentRole?: string;
+    teachingProfession?: string;
 }) {
     try {
         const session = await auth.api.getSession({

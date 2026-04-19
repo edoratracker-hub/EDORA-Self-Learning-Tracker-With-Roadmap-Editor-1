@@ -22,6 +22,7 @@ export const professionalProfile = pgTable("professional_profile", {
     phone: text("phone"),
     profileImage: text("profile_image"),
     location: text("location"),
+    address: text("address"),
     bio: text("bio"),
 
     // ===== PROFESSIONAL BACKGROUND =====
@@ -30,6 +31,7 @@ export const professionalProfile = pgTable("professional_profile", {
     industry: text("industry"),
     yearsOfExperience: integer("years_of_experience"),
     currentRole: text("current_role"),
+    teachingProfession: text("teaching_profession"),
     previousRoles: jsonb("previous_roles").$type<string[]>(),
 
     // ===== EDUCATION & QUALIFICATIONS =====

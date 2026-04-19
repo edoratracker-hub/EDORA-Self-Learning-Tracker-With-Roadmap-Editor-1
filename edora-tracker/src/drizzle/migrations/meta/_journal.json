@@ -197,6 +197,20 @@
       "when": 1774465313055,
       "tag": "0027_superb_darwin",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1776576362727,
+      "tag": "0028_unknown_omega_flight",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1776578428725,
+      "tag": "0029_jittery_pixie",
+      "breakpoints": true
     }
   ]
 }

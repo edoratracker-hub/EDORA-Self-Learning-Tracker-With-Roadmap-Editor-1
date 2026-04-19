@@ -40,6 +40,9 @@ export function ProfileSettings() {
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
   const [website, setWebsite] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [address, setAddress] = useState("");
+  const [teachingProfession, setTeachingProfession] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,6 +54,9 @@ export function ProfileSettings() {
         setBio(res.profile.bio || "");
         setLocation(res.profile.location || "");
         setWebsite(res.profile.websiteUrl || "");
+        setPhoneNumber(res.profile.phone || "");
+        setAddress(res.profile.address || "");
+        setTeachingProfession(res.profile.teachingProfession || "");
       }
     }
     loadProfile();
@@ -84,11 +90,14 @@ export function ProfileSettings() {
         image: image || undefined
       });
 
-      // 2. Update the dedicated mentorProfile row (Bio/Location/Website)
+      // 2. Update the dedicated mentorProfile row
       const mentorRes = await createOrUpdateMentorProfile({
         bio,
         location,
-        websiteUrl: website
+        websiteUrl: website,
+        phone: phoneNumber,
+        address,
+        teachingProfession,
       });
 
       if (authError) {
@@ -194,15 +203,46 @@ export function ProfileSettings() {
               </p>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  placeholder="City, Country"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  placeholder="+1 (555) 000-0000"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="address">Full Address</Label>
               <Input
-                id="location"
-                placeholder="City, Country"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                id="address"
+                placeholder="123 Street, City, ZIP"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
               />
             </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="teaching">Teaching Profession</Label>
+                <Input
+                  id="teaching"
+                  placeholder="e.g. University Professor, Online Instructor"
+                  value={teachingProfession}
+                  onChange={(e) => setTeachingProfession(e.target.value)}
+                />
+              </div>
 
             <div className="space-y-2">
               <Label htmlFor="website">Website</Label>

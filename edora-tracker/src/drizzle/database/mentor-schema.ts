@@ -22,6 +22,7 @@ export const mentorProfile = pgTable("mentor_profile", {
     phone: text("phone"),
     profileImage: text("profile_image"),
     location: text("location"),
+    address: text("address"),
     bio: text("bio"),
 
     // ===== PROFESSIONAL BACKGROUND (Beyond student level) =====
@@ -30,6 +31,7 @@ export const mentorProfile = pgTable("mentor_profile", {
     industry: text("industry"), // e.g., "Technology", "Finance", "Healthcare"
     yearsOfExperience: integer("years_of_experience"),
     currentRole: text("current_role"),
+    teachingProfession: text("teaching_profession"),
     previousRoles: jsonb("previous_roles").$type<string[]>(),
 
     // ===== EDUCATION & QUALIFICATIONS =====
