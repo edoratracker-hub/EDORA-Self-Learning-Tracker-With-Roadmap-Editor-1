@@ -1,4 +1,4 @@
-import React from "react";
+
 import { ProfessionalOnboarding } from "./_components/professional-onboarding";
 import { Separator } from "@/components/ui/separator";
 
