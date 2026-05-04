@@ -1,8 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
-// @ts-ignore
-import { TiptapCollabProvider } from "@tiptap-pro/provider"
+import { HocuspocusProvider } from "@hocuspocus/provider"
 import { Doc as YDoc } from "yjs"
 import {
   fetchCollabToken,
@@ -12,7 +11,7 @@ import {
 } from "@/lib/tiptap-collab-utils"
 
 export type CollabContextValue = {
-  provider: TiptapCollabProvider | null
+  provider: HocuspocusProvider | null
   ydoc: YDoc
   hasCollab: boolean
 }
@@ -33,7 +32,7 @@ export const useCollab = (): CollabContextValue => {
 }
 
 export const useCollaboration = (room: string) => {
-  const [provider, setProvider] = useState<TiptapCollabProvider | null>(null)
+  const [provider, setProvider] = useState<HocuspocusProvider | null>(null)
   const [collabToken, setCollabToken] = useState<string | null>(null)
   const [hasCollab, setHasCollab] = useState<boolean>(true)
   const ydoc = useMemo(() => new YDoc(), [])
@@ -61,9 +60,9 @@ export const useCollaboration = (room: string) => {
     const documentName = room ? `${docPrefix}${room}` : docPrefix
     const appId = TIPTAP_COLLAB_APP_ID
 
-    const newProvider = new TiptapCollabProvider({
+    const newProvider = new HocuspocusProvider({
+      url: `wss://${appId}.collab.tiptap.cloud`,
       name: documentName,
-      appId,
       token: collabToken,
       document: ydoc,
     })

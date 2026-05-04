@@ -3,7 +3,6 @@
 import { useParams, useRouter } from "next/navigation";
 import { useJobDetail } from "@/app/hooks/use-job-detail";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { JobDetailsCard } from "./JobDetailsCard";
 import { ApplicantsTable } from "./ApplicantsTable";

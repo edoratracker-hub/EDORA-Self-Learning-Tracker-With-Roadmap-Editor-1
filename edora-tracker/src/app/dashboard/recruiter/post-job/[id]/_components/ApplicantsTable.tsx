@@ -59,7 +59,9 @@ export function ApplicantsTable({ applicants, job }: ApplicantsTableProps) {
           <div>
             <CardTitle>Applicants</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              {applicants.length} {applicants.length === 1 ? 'candidate has' : 'candidates have'} applied for this position
+              {applicants.length}{" "}
+              {applicants.length === 1 ? "candidate has" : "candidates have"}{" "}
+              applied for this position
             </p>
           </div>
           <Badge variant="secondary" className="text-base px-3 py-1">
@@ -75,6 +77,7 @@ export function ApplicantsTable({ applicants, job }: ApplicantsTableProps) {
               <TableRow>
                 <TableHead className="w-[200px]">Name</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Resume</TableHead>
                 <TableHead className="w-[120px]">Applied Date</TableHead>
                 <TableHead className="w-[180px]">Interview Scheduled</TableHead>
                 <TableHead className="text-right w-[220px]">Actions</TableHead>
@@ -89,9 +92,25 @@ export function ApplicantsTable({ applicants, job }: ApplicantsTableProps) {
                   <TableCell className="text-muted-foreground">
                     {applicant.email}
                   </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {applicant.resume ? (
+                      <a
+                        href={applicant.resume}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {applicant.studentName} Resume
+                      </a>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        No resume provided
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(applicant.appliedAt), {
-                      addSuffix: true
+                      addSuffix: true,
                     })}
                   </TableCell>
                   <TableCell>
@@ -101,23 +120,34 @@ export function ApplicantsTable({ applicants, job }: ApplicantsTableProps) {
                           <div className="flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400">
                             <Calendar className="h-3.5 w-3.5" />
                             <span className="font-medium">
-                              {format(new Date(applicant.interviewDate), "MMM d, yyyy")}
+                              {format(
+                                new Date(applicant.interviewDate),
+                                "MMM d, yyyy",
+                              )}
                             </span>
                           </div>
                           <span className="text-xs text-muted-foreground pl-5">
-                            {format(new Date(applicant.interviewTime), "h:mm a")}
+                            {format(
+                              new Date(applicant.interviewTime),
+                              "h:mm a",
+                            )}
                           </span>
                         </div>
                       </Link>
                     ) : (
-                      <span className="text-sm text-muted-foreground">Not scheduled</span>
+                      <span className="text-sm text-muted-foreground">
+                        Not scheduled
+                      </span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       {applicant.interviewDate && applicant.interviewTime ? (
                         <>
-                          <Badge variant="outline" className="text-blue-600 border-blue-200">
+                          <Badge
+                            variant="outline"
+                            className="text-blue-600 border-blue-200"
+                          >
                             <Calendar className="h-3 w-3 mr-1" />
                             Scheduled
                           </Badge>
